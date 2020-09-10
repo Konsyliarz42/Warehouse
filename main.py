@@ -4,123 +4,140 @@ import functions
 logging.basicConfig(    level = logging.DEBUG, 
                         format = '%(asctime)s %(message)s', 
                         handlers = [logging.FileHandler('logfile.log', 'w', 'utf-8')] )
-refresh = False
-change = False
-items = list()
-status_file = "status file.CSV"
-string_input = "What will we do?\n>: "
 path = os.getcwd()
+status_file = "status file.CSV"
+items = list()
 
-#--------------------------------
-def confirm_choice():
-    while True:
-        x = input("Are you sure? >: ")
-        x = x.lower()
-        x = x.strip()
+title = "W A R E H O U S E  M E N A G E N T".center(64, ' ')
+author = "Tomasz Kordiak"
+version = 1.0
+change = False
 
-        if x == 'y' or x == 'yes':
-            return True
-
-        elif x == 'n' or x == 'no':
-            return False
+string_input = "What will we do?\n>: "
+help_list = """add item        - start adding procedure
+clear           - clearing window
+exit            - quit program
+help            - show list of all comends
+info            - show information about program
+load            - load status from 'status file.CSV'
+load from ...   - load status from other file
+remove          - remove 'status file.CSV'
+remove file ... - remove file
+save            - save status in 'status file.CSV'
+save in ...     - save status in other file
+sell item ...   - start selling procedure
+show files      - show list of all founded CSV files
+show revenue    - show revenue of warehouse
+show item ...   - show information about item
+show items      - show array of all items in warehouse"""
 
 #================================================================
 logging.debug("-------- START --------")
-print('='*64 + "\n\tW A R E H O U S E  M E N A G E N T\n" + '='*64)
+print('='*64 + f"\n{title}\n" + '='*64)
+
+try:
+    status_file = functions.check_files(path)
+    logging.debug(f"Try open {status_file}")
+    print("Loading warehouse status...")
+    open(status_file, 'r')
+except:
+    logging.debug("files not found")
+    print("Files not found\n")
+else:
+    logging.debug(f"Loading data form {status_file}")
+    items = functions.load_status(status_file)
+    print(f"({status_file}) Loading complete...\n")
 
 while True:
-    if refresh == True:
-        os.system("cls")
-        print('='*64 + "\n\tW A R E H O U S E  M E N A G E N T\n" + '='*64)
-        refresh = False
-
-    if items == []:
-        try:
-            status_file = functions.check_files(path)
-            logging.debug(f"Try open {status_file}")
-            print("Loading warehouse status...")
-            open(status_file, 'r')
-        except:
-            logging.debug("file not found")
-            print(f"File {status_file} not found\n")
-        else:
-            logging.debug(f"Loading {status_file}")
-            items = functions.load_status(status_file)
-            print(f"({status_file}) Loading complete...\n")
-
-    logging.debug("Waiting on input...")
+    logging.debug("waiting on input...")
     x = input(string_input)
     x = x.lower()
-    list_input = list(x.split(' '))
-
-    if list_input == []:
-        logging.debug("Input is empty")
-        list_input.append(None)
-
-    logging.debug(f"User write: '{x}'")
+    x = x.strip()
     string_input = "What will we do?\n>: "
-    
-    #Quit program
-    if list_input[0] == "exit" and confirm_choice() == True:
-        logging.debug("Program is end")
-        print("Goodbye")
+    logging.debug(f"user write: '{x}'")
+
+    #----------------
+    if x == 'exit' and functions.confirm_choice() == True:
+        logging.debug("end program")
+        print('Goodbye')
         break
 
-    #Clear window
-    elif list_input[0] == 'clear':
-        logging.debug("Clear window")
-        refresh = True
+    #----------------
+    elif x == 'help':
+        logging.debug("print 'help_list'\n")
+        print(help_list)
 
-    #Save status
-    elif list_input[0] == 'save' and confirm_choice() == True:
-        file_name = "status file.CSV"
+    #----------------
+    elif x == 'clear':
+        logging.debug("refresh window\n")
+        os.system('cls')
+        print('='*64 + f"\n{title}\n" + '='*64)
 
-        if 'in' in list_input and len(list_input) > 2:
-            file_name = ' '.join(list_input[2:])
-
-            if '.' not in file_name:
-                file_name += '.CSV'
-
-        logging.debug("Saving status...")
-        print(f"Status is saving in '{file_name}'")
-        functions.save_status(items, file_name)
-        change = False
-
-    #Load status
-    elif list_input[0] == 'load' and len(list_input) > 1:
-        x = ' '.join(list_input[1:])
-
-        if os.path.isfile(x) == True:
-            if confirm_choice() == True:
-                print(f"({x}) Loading complete...")
-                items = functions.load_status(x)
-        
+    #----------------
+    elif 'load' in x:
+        if 'from' in x:
+            status_file = functions.get_file(x)
         else:
-            print("File not found\nTo show list of CSV file write 'show csv'")
+            status_file = 'status file.CSV'
 
-    #Show CSV list
-    elif list_input[0] == 'show' and len(list_input) > 1:
-        if list_input[1] == 'csv':
-            print([file_in_dir for file_in_dir in os.listdir(path) if file_in_dir.endswith('.CSV')])
+        if os.path.isfile(status_file) == True:
+            if change == True:
+                print("Warehouse status is changed!")
 
-    #Remove file
-    elif list_input[0] == 'remove' and len(list_input) > 1:
-        x = ' '.join(list_input[1:])
+            if functions.confirm_choice() == True:
+                logging.debug(f"loading data form {status_file}")
+                print(f"Loading {status_file}")
+                items = functions.load_status(status_file)
+                print("Loading complete...")
+        else:
+            print(f"{status_file} not found\nUse 'show files' to checks files")
 
-        if os.path.isfile(x) == True:
-            if confirm_choice() == True:
-                print(f"{x} is deleted")
-                os.remove(x)
+    #----------------
+    elif 'save' in x:
+        if 'in' in x:
+            status_file = functions.get_file(x)
+        else:
+            status_file = 'status file.CSV'
+
+        if functions.confirm_choice() == True:
+            logging.debug(f"saving in {status_file}")
+            print(f"Saving in {status_file}")
+            functions.save_status(items, status_file)
+            change = False
+            print("Saving complete...")
+
+    #----------------
+    elif x == 'show files':
+        logging.debug("print all CSV files\n")
+        files = [file_in_dir for file_in_dir in os.listdir(path) if file_in_dir.endswith('.CSV')]
+
+        for i in files:
+            print('- ' + i)
+
+    #----------------
+    elif 'remove' in x:
+        status_file = functions.get_file(x)
+
+        if os.path.isfile(status_file) == True:
+            if functions.confirm_choice() == True:
+                logging.debug(f"removing {status_file}\n")
+                print(f"{status_file} is deleted")
+                os.remove(status_file)
         
         else:
             print("File not found")
 
-    #Repeat input
-    else:
-        logging.debug("Incorrect input\n")
-        string_input = "Can you write again?\n>: "
+    #----------------
+    elif x == 'info':
+        logging.debug("print info about program\n")
+        print("author:", author)
+        print("version:", version)
 
-    #Loop
+    #----------------
+    else:
+        logging.debug("comend is incorrect\n")
+        string_input = "Can you write again?\n>: "
+    
     print('')
 
 logging.debug("-------- END --------")
