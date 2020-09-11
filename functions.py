@@ -4,7 +4,7 @@ import csv, logging, os, re
 def try_open(file_name):
     try:
         open(file_name, 'r')
-        
+
     except:
         return False
 
@@ -46,6 +46,23 @@ def is_number(number):
 
     else:
         return True
+
+#--------------------------------
+def is_in_list(name, items_list):
+    for item in items_list:
+        if name == item['name']:
+            return True
+
+    return False
+
+#--------------------------------
+def add_item(name, quantity, unit, unit_price):
+    dictionary = {  'name': name,
+                    'quantity': quantity,
+                    'unit': unit,
+                    'unit_price': unit_price    } 
+    
+    return dictionary
 
 #--------------------------------
 def check_files(path_dir=os.getcwd()):
@@ -107,23 +124,6 @@ def save_status(items_list, file_name="status file.CSV"):
             csv_writer.writerow(dictionary)
     
     logging.debug("- file is saved\n")
-
-#--------------------------------
-def is_in_list(name, items_list):
-    for item in items_list:
-        if name == item['name']:
-            return True
-
-    return False
-
-#--------------------------------
-def add_item(name, quantity, unit, unit_price):
-    dictionary = {  'name': name,
-                    'quantity': quantity,
-                    'unit': unit,
-                    'unit_price': unit_price    } 
-    
-    return dictionary
 
 #================================================================
 if __name__ == "__main__":

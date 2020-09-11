@@ -98,6 +98,30 @@ while True:
                 print("Item is added to warehouse")
 
     #----------------
+    elif 'update item' in x:
+        item_name = x[x.rfind(' '):].strip()
+
+        for item in items:
+            if item_name == item['name']:
+                print(item, '\n')
+                x = input("What you want change? >: ")
+
+                while x not in item.keys():
+                    x = input("Can you write again? >: ")
+
+                y = input("Write new value >: ")
+
+                if x == 'quantity' or x == 'unit_price':
+                    while functions.is_number(y) == False:
+                        y = input("Value is not a number! >: ")
+
+                logging.debug(f"item '{item_name}' is update")
+                print("Item is updated")
+                item[x] = y
+                change = True
+                break
+        
+    #----------------
     elif x == 'exit':
         if change == True:
             print("In this session status was changed and not will saved!")
