@@ -29,7 +29,8 @@ sell item ...   - start selling procedure
 show files      - show list of all founded CSV files
 show revenue    - show revenue of warehouse
 show item ...   - show information about item
-show items      - show array of all items in warehouse"""
+show items      - show array of all items in warehouse
+update item ... - update status of item in warehouse"""
 
 #================================================================
 logging.debug("-------- START --------")
@@ -57,10 +58,54 @@ while True:
     logging.debug(f"user write: '{x}'")
 
     #----------------
-    if x == 'exit' and functions.confirm_choice() == True:
-        logging.debug("end program")
-        print('Goodbye')
-        break
+    if x == 'add item':
+        logging.debug("start adding procedure")
+        print("To abort procedure confirm empty input")
+        variables_name  = ['name', 'quantity', 'unit', 'price']
+        variables = list()
+
+        logging.debug("waiting on values of variables...")
+        for var in variables_name:
+            x = input('- ' + var + ' >: ')
+
+            if x == '':
+                break
+
+            else:
+                variables.append(x)
+
+        if len(variables) < len(variables_name):
+            logging.debug("procedure is aborted")
+            print("Adding procedure is aborted")
+
+        else:
+            while functions.is_number(variables[1]) == False:
+                print("Value of quantity is not a number!\nPleas fix it")
+                variables[1] = input(">: ")
+            
+            while functions.is_number(variables[3]) == False:
+                print("Value of price is not a number!\nPleas fix it")
+                variables[3] = input(">: ")
+
+            if functions.is_in_list(variables[0], items) == True:
+                print("Item is already in warehouse!\nIf you want change item status use 'update item ...'")
+
+            elif functions.confirm_choice() == True:
+                logging.debug(f"adding {variables[0]}\n")
+                x = functions.add_item(variables[0], variables[1], variables[2], variables[3])
+                items.append(x)
+                change = True
+                print("Item is added to warehouse")
+
+    #----------------
+    elif x == 'exit':
+        if change == True:
+            print("In this session status was changed and not will saved!")
+
+        if functions.confirm_choice() == True:
+            logging.debug("end program")
+            print('Goodbye')
+            break
 
     #----------------
     elif x == 'help':
@@ -80,17 +125,21 @@ while True:
         else:
             status_file = 'status file.CSV'
 
-        if os.path.isfile(status_file) == True:
-            if change == True:
-                print("Warehouse status is changed!")
+        if change == True:
+            print("The function 'load' is block, because in this session status was changed!")
 
-            if functions.confirm_choice() == True:
-                logging.debug(f"loading data form {status_file}")
-                print(f"Loading {status_file}")
-                items = functions.load_status(status_file)
-                print("Loading complete...")
         else:
-            print(f"{status_file} not found\nUse 'show files' to checks files")
+            if os.path.isfile(status_file) == True:
+                if change == True:
+                    print("Warehouse status is changed!")
+
+                if functions.confirm_choice() == True:
+                    logging.debug(f"loading data form {status_file}")
+                    print(f"Loading {status_file}")
+                    items = functions.load_status(status_file)
+                    print("Loading complete...")
+            else:
+                print(f"{status_file} not found\nUse 'show files' to checks files")
 
     #----------------
     elif 'save' in x:
