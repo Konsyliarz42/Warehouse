@@ -208,7 +208,7 @@ while True:
     #--------------------------------
     elif 'load' in comend or 'save' in comend or 'remove' in comend:
         logging.debug("detect operation on files...")
-        if ' ' in comend:
+        if 'in' in comend or 'from' in comend:
             status_file = comend[comend.rfind(' '):].strip()
             status_file = status_file.strip()
 
