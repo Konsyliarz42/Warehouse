@@ -1,5 +1,5 @@
 import os, logging, datetime
-import new_functions as func
+import new_functions as func, main_functions as mfunc
 
 logging.basicConfig(    level = logging.DEBUG, 
                         format = '%(asctime)s %(message)s', 
@@ -31,7 +31,7 @@ show item ...   - Show information about item
 show revenue    - Show list of month history revenues
 
 clear           - Clear window
-help            - Show list of comends
+help            - Show list of commands
 exit            - Quit program"""
 
 #================================================================
@@ -64,15 +64,15 @@ else:
 while True:
     logging.debug("waiting on input...")
 
-    comend  = input(string_input)
-    comend  = comend.lower()
-    comend  = comend.strip()
+    command  = input(string_input)
+    command  = command.lower()
+    command  = command.strip()
 
     string_input    = "What will we do? >: "
-    logging.debug(f"user wrote: '{comend}'")
+    logging.debug(f"user wrote: '{command}'")
 
     #--------------------------------
-    if comend == 'exit':
+    if command == 'exit':
         if change == True:
             print("Status of warehouse in this session was changed and you not saved this!")
 
@@ -82,24 +82,24 @@ while True:
             break
     
     #--------------------------------
-    elif comend == 'clear':
+    elif command == 'clear':
         logging.debug("clear console\n")
         os.system('cls')
         print('='*64 + f"\n{title}\n" + '='*64)
 
     #--------------------------------
-    elif comend == 'help':
+    elif command == 'help':
         logging.debug("print help list\n")
         print(help_list)
 
     #--------------------------------
-    if comend == 'sell item' or comend == 'add item' or comend == 'update item':
+    elif command == 'sell item' or command == 'add item' or command == 'update item':
         string_input_list   = ["Item name  : ", "Quantity   : ", "Unit       : ", "Price      : "]
         dictionary_list     = list()
 
         logging.debug("waiting on get input list...")
         for string in string_input_list:
-            if comend == 'sell item' and 'Unit' in string:
+            if command == 'sell item' and 'Unit' in string:
                 x = 'psc'
 
             else:
@@ -125,7 +125,7 @@ while True:
         position = func.is_in_list(dictionary_list[0], items_list)
 
         #Selling procedure
-        if comend == 'sell item':
+        if command == 'sell item':
             logging.debug("start selling procedure")
 
             if position == False:
@@ -155,7 +155,7 @@ while True:
                     print("Procedure is abort")
 
         #Adding procedure
-        elif comend == 'add item':
+        elif command == 'add item':
             logging.debug("start adding procedure")
 
             if position != False:
@@ -206,21 +206,12 @@ while True:
                     print("Procedure is abort")
 
     #--------------------------------
-    elif 'load' in comend or 'save' in comend or 'remove' in comend:
+    elif 'load' in command or 'save' in command or 'remove' in command:
         logging.debug("detect operation on files...")
-        if 'in' in comend or 'from' in comend:
-            status_file = comend[comend.rfind(' '):].strip()
-            status_file = status_file.strip()
-
-            if '.' not in status_file:
-                status_file += '.CSV'
-
-            logging.debug(f"operation has argument: {status_file}")
-        else:
-            status_file = "status file.CSV"
+        status_file = mfunc.status_file_name(command)
 
         #Load option
-        if 'load' in comend:
+        if 'load' in command:
             logging.debug("start 'load' operation")
             while os.path.isfile(status_file) == False:
                 status_file = input("File not found! Write again >: ")
@@ -235,7 +226,7 @@ while True:
                 print("complete", ' ')
 
         #Save option
-        elif 'save' in comend:
+        elif 'save' in command:
             logging.debug("start 'save' operation")
             if func.confirm_choice() == True:
                 print("Saving...", end=' ')
@@ -255,50 +246,18 @@ while True:
                 print("complete", ' ')
     
     #--------------------------------
-    elif 'show' in comend:
-        if 'info' in comend:
-            logging.debug("show information about program\n")
-            print('Author:', author, '\nVersion', version)
+    elif 'show' in command:
+        if 'info' in command:
+            mfunc.show_info(author, version)
 
-        elif 'status' in comend:
-            logging.debug("show information about items in warehouse\n")
-            print('name'.center(16,' '), 'quantity'.center(6,' '), 'unit'.center(4,' '), 'price'.center(8,' '), sep=' | ')
-            print('—'*(16 + 8*2 + 4 + 3*3))
+        elif 'status' in command:
+            mfunc.show_status(items_list)
 
-            for item in items_list:
-                print(f"{item['name']:<16} | {item['quantity']:>8} | {item['unit']:<4} | {item['unit_price']:>5} €")
+        elif 'item' in command:
+            mfunc.show_item(command, items_list)
 
-        elif 'item' in comend:
-            name = comend[comend.find('item') + 4:].strip()
-            item = func.is_in_list(name, items_list)
-            logging.debug(f"show information about item: '{name}'\n")
-
-            if item != False:
-                for it in items_list[item]:
-                    print(f"{it:>12} : {items_list[item][it]}")
-
-        elif 'revenue' in comend:
-            logging.debug("show revenues\n")
-            revenue_list    = func.load_revenue(date, path)
-            items_value     = 0
-            selling         = 0
-
-            print(  'date'.center(8,' '),   'time'.center(8,' '), 
-                    'name'.center(16,' '),  'quantity'.center(6,' '), 
-                    'unit'.center(4,' '),   'price'.center(8,' '),      sep=' | ')
-            print('—'*(16 + 8*4 + 4 + 3*5))
-
-            for item in revenue_list:
-                print(f"{item['date']:<8} | {item['time']:<8} | {item['name']:<16} | {item['quantity']:>8} | {item['unit']:<4} | {item['unit_price']:>5} €")
-                selling += float(item['unit_price']) * int(item['quantity'])
-
-            for item in items_list:
-                items_value += float(item['unit_price']) * int(item['quantity'])
-
-            print(  '\n' + '-'*32, 
-                    '\nValue of warehouse   = ', round(items_value, 2),
-                    '\nValue of selling     = ', round(selling, 2), 
-                  '\n\nRevenue              = ', round(selling - items_value, 2)  )
+        elif 'revenue' in command:
+            mfunc.show_revenue(date, path, items_list)
 
         else:
             logging.debug("input is incorrect")
