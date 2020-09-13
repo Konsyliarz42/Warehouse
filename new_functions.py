@@ -70,13 +70,22 @@ def confirm_choice():
 def save_revenue(date, item_dict, path):
     logging.debug(f"save_revenue() is run")
     file_name = "history/" + date + '.CSV'
-    file_name = os.path.realpath(file_name)
+    file_name = os.path.realpath(file_name) 
+
+    if os.path.isfile(file_name) == False:
+        write_header = True
+
+    else:
+        write_header = False
 
     with open(file_name, 'a', newline='') as csv_file:
         logging.debug(f"- write '{file_name}'")
         keys = ['date','time','name','quantity','unit','unit_price']
         csv_writer = csv.DictWriter(csv_file, keys)
-        csv_writer.writeheader()
+
+        if write_header == True:
+            csv_writer.writeheader()
+            
         csv_writer.writerow(item_dict)
     
     logging.debug("- file is saved\n")

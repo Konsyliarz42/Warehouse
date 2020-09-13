@@ -94,116 +94,17 @@ while True:
 
     #--------------------------------
     elif command == 'sell item' or command == 'add item' or command == 'update item':
-        string_input_list   = ["Item name  : ", "Quantity   : ", "Unit       : ", "Price      : "]
-        dictionary_list     = list()
-
-        logging.debug("waiting on get input list...")
-        for string in string_input_list:
-            if command == 'sell item' and 'Unit' in string:
-                x = 'psc'
-
-            else:
-                x = False
-
-                while x == False:
-                    x = input(string)
-
-                    if x == '':
-                        x = None
-                        break
-
-                    elif 'Quantity' in string or 'Price' in string:
-                        if func.is_number(x) == False:
-                            print(f"Value is not a number!")
-                            x = False
-
-            dictionary_list.append(x)
-
-            if x == None:
-                break
-
-        position = func.is_in_list(dictionary_list[0], items_list)
-
         #Selling procedure
         if command == 'sell item':
-            logging.debug("start selling procedure")
-
-            if position == False:
-                logging.debug("item is not found in warehouse\n")
-                print(f"'{dictionary_list[0]}' is not found in warehouse!")
-
-            else:
-                if None not in dictionary_list:
-                    dictionary = {  'date'      : today_date.strftime("%x"),
-                                    'time'      : today_date.strftime("%X"),
-                                    'name'      : dictionary_list[0],
-                                    'quantity'  : dictionary_list[1],
-                                    'unit'      : dictionary_list[2],
-                                    'price'     : dictionary_list[3]    }
-
-                    if func.confirm_choice() == True:
-                        logging.debug("accepting of selling")
-                        print("Start selling...", end=' ')
-                        revenue_list.append(dictionary)
-                        func.save_revenue(date, dictionary, path)
-                        items_list[position]['quantity'] = int(items_list[position]['quantity']) - int(dictionary_list[1])
-                        change = True
-                        print('complete', ' ')
-
-                else:
-                    logging.debug("procedure is abort")
-                    print("Procedure is abort")
+            change, revenue_list, items_list = mfunc.sell_item(revenue_list, items_list, today_date, path)
 
         #Adding procedure
         elif command == 'add item':
-            logging.debug("start adding procedure")
-
-            if position != False:
-                dictionary_list[1] = int(items_list[position]['quantity']) + int(dictionary_list[1])
-
-            else:
-                if None not in dictionary_list:
-                    dictionary = {  'name'          : dictionary_list[0],
-                                    'quantity'      : dictionary_list[1],
-                                    'unit'          : dictionary_list[2],
-                                    'unit_price'    : dictionary_list[3]    }
-
-                    if func.confirm_choice() == True:
-                        logging.debug("accepting of adding")
-                        print("Start adding...", end=' ')
-                        items_list.append(dictionary)
-                        change = True
-                        print('complete', ' ')
-                
-                else:
-                    logging.debug("procedure is abort")
-                    print("Procedure is abort")
+            change, items_list = mfunc.add_item(items_list)
 
         #Updating procedure
         else:
-            logging.debug("start updating procedure")
-
-            if position == False:
-                logging.debug("item is not found in warehouse\n")
-                print(f"'{dictionary_list[0]}' is not found in warehouse!")
-            
-            else:
-                if None not in dictionary_list:
-                    dictionary = {  'name'          : dictionary_list[0],
-                                    'quantity'      : dictionary_list[1],
-                                    'unit'          : dictionary_list[2],
-                                    'unit_price'    : float(dictionary_list[3]) }
-
-                    if func.confirm_choice() == True:
-                        logging.debug("accepting of updating")
-                        print("Start updating...", end=' ')
-                        items_list[position] = dictionary
-                        change = True
-                        print('complete', ' ')
-                
-                else:
-                    logging.debug("procedure is abort")
-                    print("Procedure is abort")
+            change, items_list = mfunc.update_item(items_list)
 
     #--------------------------------
     elif 'load' in command or 'save' in command or 'remove' in command:
@@ -212,38 +113,18 @@ while True:
 
         #Load option
         if 'load' in command:
-            logging.debug("start 'load' operation")
-            while os.path.isfile(status_file) == False:
-                status_file = input("File not found! Write again >: ")
-
-            if change == True:
-                print("Status of warehouse in this session was changed and you not saved this!")
-
-            if func.confirm_choice() == True:
-                print("Loading...", end=' ')
-                items_list = func.load_file(status_file)
-                change = False
-                print("complete", ' ')
+            x, y = mfunc.load(change, status_file)
+            
+            if x != None:
+                change, items_list = x, y
 
         #Save option
         elif 'save' in command:
-            logging.debug("start 'save' operation")
-            if func.confirm_choice() == True:
-                print("Saving...", end=' ')
-                func.save_file(status_file, items_list)
-                change = False
-                print("complete", ' ')
+            change = mfunc.save(status_file, items_list)
 
         #Remove option
         else:
-            logging.debug("start 'remove' operation")
-            while os.path.isfile(status_file) == False:
-                status_file = input("File not found! Write again >: ")
-
-            if func.confirm_choice() == True:
-                print("Removing...", end=' ')
-                os.remove(status_file)
-                print("complete", ' ')
+            mfunc.remove(status_file)
     
     #--------------------------------
     elif 'show' in command:
